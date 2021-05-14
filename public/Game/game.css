@@ -1,45 +1,82 @@
+@import url('https://fonts.googleapis.com/css2?family=Girassol&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Goblin+One&display=swap');
-.display-3{
+
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+body{
+    height: 100vh;
+    background-image:linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('../background.png');
+    background-repeat: no-repeat;
+    background-size: cover;
+}
+
+.header{
     font-family: 'Goblin One', cursive;
+    font-size:50px;
+    width: 80%;
 }
-.w-90{
-    width:90%;
-}
-.flex{
+
+.main-panel{
+    width: 90%;
     display: flex;
 }
-.word-panel{
-    font-size:40px
+.leaderboard, .chat{
+    flex:1;
 }
-.word{
+.head{
+    font-family: 'Girassol', cursive;
+}
+
+.chat-container, .leaderboard-users{
+    height: 45vh;
+    overflow-y: scroll;
+}
+.chat-container::-webkit-scrollbar, .leaderboard-users::-webkit-scrollbar  {
+    display: none;
+}
+#word{
     position: absolute;
     left: 50%;
     transform: translateX(-50%);
 }
-.chat-box, .user-box{
-    flex:1;
+.tools{
+    display:flex;
+    justify-content:space-around;
+    padding:20px
 }
-.head{
-    text-align: center;
-    font-size:20px
+.fa-trash{
+    font-size:30px;
+    cursor:pointer
 }
-.popups{
-    position:absolute;
-    top:0;
-    left:0;
-    width:100%;
-    height:100%;
-    background-color:rgba(0, 0, 0, 0.5);
+#width-picker{
+    width: 200px
 }
-.startGame, .info{
-    position:absolute;
-    top:50%;
+.popup-wrapper{
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    width: 100%;
+    background-color:rgba(0, 0, 0, 0.5)
+}
+.popup, .notification{
+    width: 40%;
+    position: absolute;
+    top: 50%;
     left:50%;
     transform: translate(-50%, -50%);
-    width:50%;
-    
+
 }
-.info, #adminOnly{
+.main-toast{
+    position: absolute;
+    top: 10%;
+    right: 10%;
+    background-color:white;
+    z-index: 100;
+}
+.none{
     display: none;
 }
-

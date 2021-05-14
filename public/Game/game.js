@@ -1,167 +1,177 @@
-const socket = io()
-let secretWord = '';
-const urlParams = new URLSearchParams(window.location.search);
-const username = urlParams.get('username');
-const room = urlParams.get('room')
-const isAdmin = urlParams.get('isAdmin')
-if (isAdmin === '1') {
-    $("#adminOnly").fadeIn();
+//DOM Init and Utility Functions
+if (isAdmin) {
+    $('#adminsOnly').fadeIn();
 }
-socket.emit('joinRoom', { room, username, isAdmin })
 
-
-socket.on('userJoined', (e) => {
-    console.log(e)
-    let prev = $('.guess-container').html()
-    prev += `<div class="text-success border rounded p-2 my-1">${e}</div>    `
-    $('.guess-container').html(prev)
+$('#copyRoom').on('click', () => {
+    copyToClipboard(room);
+    toast();
 })
-socket.on('userLeft', (e) => {
-    console.log(e)
-    let prev = $('.guess-container').html()
-    prev += `<div class="text-danger border rounded p-2 my-1">${e}</div>    `
-    $('.guess-container').html(prev)
-})
+//User joins Room
+socket.emit('joinRoom', {
+    username,
+    room,
+    isAdmin
+});
 
-socket.on('updatedUsers', (e) => {
-    let htm = ''
-    e.forEach(user => {
-        htm += `<div class="border p-1 my-2" id=${user.id}>
-        <i class="fas fa-user-circle mx-2"></i>${user.username}
-    </div>`
+//New User joined
+socket.on('userJoined', ({ userList, joinedUsername }) => {
+    let prev = $('.chat-container').html();
+    prev += `<div class="text-success p-1 my-2 border rounded text-center">${joinedUsername} Joined the Room</div>`
+    $('.chat-container').html(prev);
+    document.querySelector('.chat-container').scrollTop = document.querySelector('.chat-container').scrollHeight
+    let htm = '';
+    userList.forEach((user, i) => {
+        let color = 'white';
+        if (i + 1 == 1) color = 'gold';
+        else if (i + 1 == 2) color = 'silver'
+        else if (i + 1 == 3) color = 'brown'
+        htm +=
+            `<div class="p-1 my-2 border rounded" style="background-color:${color};">
+            <div><i class="fas fa-user mr-3"></i>${user.username}</div>
+            <div><b>Score: </b>${user.points}</div>
+        </div>`
+        $('.leaderboard-users').html(htm)
+
     })
-    $('.user-container').html(htm)
 })
-//Initial Start
-$('#start').on('click', () => {
-    socket.emit('adminStartsRound')
-})
-//FadeOut
-socket.on('preRoundStart', () => {
-    $('.popups').fadeOut()
-    $('.startGame').fadeOut()
+//User left
+socket.on('userLeft', ({ userList, leavingUsername }) => {
+    let prev = $('.chat-container').html();
+    prev += `<div class="text-danger p-1 my-2 border rounded text-center">${leavingUsername} Left the Room</div>`
+    $('.chat-container').html(prev);
+    document.querySelector('.chat-container').scrollTop = document.querySelector('.chat-container').scrollHeight
+
+    let htm = '';
+    userList.forEach((user, i) => {
+        let color = 'white';
+        if (i + 1 == 1) color = 'gold';
+        else if (i + 1 == 2) color = 'silver'
+        else if (i + 1 == 3) color = 'brown'
+        htm +=
+            `<div class="p-1 my-2 border rounded" style="background-color:${color};">
+            <div><i class="fas fa-user mr-3"></i>${user.username}</div>
+            <div><b>Score: </b>${user.points}</div>
+        </div>`
+        $('.leaderboard-users').html(htm)
+
+    })
 })
 
-//People Get Words
-socket.on('drawGetWord', ({ word, drawer }) => {
-    Timer = 120
-    console.log(word)
-    $('#show-word').html(word)
-    canDraw = true;
-    $('.drawer').text(drawer)
-    $('.popups').fadeIn();
-    $('.info').fadeIn();
-    setTimeout(() => { $('.popups').fadeOut() }, 2000)
+//Initial Start
+$('#adminstart').on('click', () => {
+    socket.emit('adminStart')
 })
-socket.on('guessGetWord', ({ word, drawer }) => {
-    Timer = 120
+socket.on('adminStart', () => {
+    $('.startGamePrompt').fadeOut();
+    setInterval(() => {
+        Time--;
+        if (Time < 0) {
+            Time = -1
+        }
+        $('#time').text(Time)
+        if (Time === 0) {
+            notification(`The Word was:  "${secretWord}"`)
+            if (isTurn) {
+                socket.emit('timeOut')
+            }
+        }
+    }, 1000)
+})
+
+//Getting Words and Drawer Information
+//RoundTimer Starts
+
+socket.on('toDrawer', ({ word, userTurn }) => {
+    isTurn = true;
+    Time = constTime;
+    secretWord = word;
+    $('#word').text(word);
+    notification(`You are Drawing:  "${word}"`)
+
+})
+socket.on('toGuesser', ({ word, userTurn }) => {
+    isTurn = false;
+    secretWord = word;
+    hasGuessed = false;
+    Time = constTime;
     let hiddenWord = '';
     for (let i = 0; i < word.length; i++) {
-        hiddenWord += '_ ';
+        hiddenWord += "_ "
     }
-    $('#show-word').html(hiddenWord)
-    secretWord = word;
-    canDraw = false;
-    $('.drawer').text(`${drawer} is drawing!`)
-    $('.popups').fadeIn();
-    $('.info').fadeIn();
-    setTimeout(() => { $('.popups').fadeOut() }, 2000)
-})
+    $('#word').text(hiddenWord);
+    notification(`${userTurn.username} is Drawing!`)
 
+});
 
-socket.on('drawToGuessers', (e) => {
-    ctx.lineCap = 'round'
-    ctx.strokeStyle = e.color;
-    ctx.lineWidth = e.lineWidth
-    ctx.lineTo(e.x, e.y)
-    ctx.stroke();
-    ctx.beginPath();
-    ctx.moveTo(e.x, e.y)
+//Handling Draw Functions
+socket.on('propagateDrawing', ({ color, width, x, y }) => {
+    draw(color, width, x, y);
 })
-socket.on('mouseUp', () => {
-    ctx.beginPath();
+socket.on('mouseup', () => {
+    ctx.beginPath()
 })
-socket.on('eraseAll', () => {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-})
-$('#guessVal').on('keydown', (e) => {
-    if (e.key === "Enter") {
-        socket.emit('userGuess', { guess: $('#guessVal').val(), secretWord, username })
-        $('#guessVal').val("")
-    }
-})
-socket.on('wrongGuess', (e) => {
-    console.log(e)
-    let prev = $('.guess-container').html()
-    prev += `<div class="border rounded p-2 my-1">${e}</div>    `
-    $('.guess-container').html(prev)
-})
-socket.on('rightGuess', (e) => {
-    console.log(e)
-    let prev = $('.guess-container').html()
-    prev += `<div class="text-success border rounded p-2 my-1">${e}</div>    `
-    $('.guess-container').html(prev)
-})
-socket.on('timer', timer => {
-    $('#gametime').text(timer)
-    if (timer === 5) {
-        $('.drawer').text(`The Word was ${secretWord}`)
-        $('.popups').fadeIn();
-        $('.info').fadeIn();
-        setTimeout(() => { $('.popups').fadeOut() }, 2000)
+socket.on('clearScreen', () => {
+    ctx.clearRect(0, 0, canvas.width, canvas.height)
+});
+
+//Handling Guess Functions
+userGuess.addEventListener('keydown', (e) => {
+    if (e.code === "Enter") {
+        if (!hasGuessed) {
+            socket.emit('userGuessesWord', { username, secretWord, guess: e.target.value, Time });
+        }
+        else {
+            let prev = $('.chat-container').html();
+            prev += `<div class="text-warning p-1 my-2 border rounded text-center">Youve Already Guessed the Word!</div>`
+            $('.chat-container').html(prev);
+            document.querySelector('.chat-container').scrollTop = document.querySelector('.chat-container').scrollHeight
+
+        }
+        if (secretWord.toLowerCase() === e.target.value.toLowerCase()) {
+            hasGuessed = true;
+        }
+        e.target.value = ""
     }
 })
 
-
-
-
-
-
-
-
-
-
-
-
-//Draw Functions
-function draw(e) {
-    socket.emit('drawingToAll', { color, lineWidth, x: Math.floor(e.clientX - canvas.getBoundingClientRect().left), y: Math.floor(e.clientY - canvas.getBoundingClientRect().top) })
-    ctx.lineCap = 'round'
-    ctx.strokeStyle = color;
-    ctx.lineWidth = lineWidth
-    ctx.lineTo(Math.floor(e.clientX - canvas.getBoundingClientRect().left), Math.floor(e.clientY - canvas.getBoundingClientRect().top))
-    ctx.stroke();
-    ctx.beginPath();
-    ctx.moveTo(Math.floor(e.clientX - canvas.getBoundingClientRect().left), Math.floor(e.clientY - canvas.getBoundingClientRect().top))
-}
-canvas.addEventListener('mouseup', () => {
-    mouseDown = false;
-    ctx.beginPath();
-    if (canDraw) {
-        socket.emit('mouseUp')
-    }
-})
-$('.fa-trash').on('click', () => {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    socket.emit('eraseAll')
-})
-
-setInterval(() => {
-    Timer--;
-    if (Timer >= 0 && canDraw) { socket.emit('timer', Timer) }
-    else { Timer = 120; }
-}, 1000)
-
-
-$('#copyID').on('click', () => {
-
-    const elem = document.createElement('textarea');
-    elem.value = room;
-    document.body.appendChild(elem);
-    elem.select();
-    document.execCommand('copy');
-    document.body.removeChild(elem);
+socket.on('rightGuess', ({ username }) => {
+    let prev = $('.chat-container').html();
+    prev += `<div class="text-success p-1 my-2 border rounded text-center">${username} Guessed the Word</div>`
+    $('.chat-container').html(prev);
+    document.querySelector('.chat-container').scrollTop = document.querySelector('.chat-container').scrollHeight
 
 })
+socket.on('wrongGuess', ({ username, guess }) => {
+    let prev = $('.chat-container').html();
+    prev += `<div class="p-1 my-2 rounded"><b>${username}</b>: ${guess}</div>`
+    $('.chat-container').html(prev);
+    document.querySelector('.chat-container').scrollTop = document.querySelector('.chat-container').scrollHeight
+
+})
+
+socket.on('updatingPoints', ({ users }) => {
+    let userList = users
+    let htm = '';
+    userList.forEach((user, i) => {
+        let color = 'white';
+        if (i + 1 == 1) color = 'gold';
+        else if (i + 1 == 2) color = 'silver'
+        else if (i + 1 == 3) color = 'brown'
+        htm +=
+            `<div class="p-1 my-2 border rounded" style="background-color:${color};">
+            <div><i class="fas fa-user mr-3"></i>${user.username}</div>
+            <div><b>Score: </b>${user.points}</div>
+        </div>`
+        $('.leaderboard-users').html(htm)
+
+    })
+})
+
+socket.on('revealWord', () => {
+    notification(`The Word Was : ${secretWord}`)
+})
+
+
 
 

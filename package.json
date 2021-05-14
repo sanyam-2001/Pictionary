@@ -1,17 +1,18 @@
 {
-  "name": "pictionary",
+  "name": "pic",
   "version": "1.0.0",
-  "description": "A Pictionary Game",
+  "description": "A multiplayer Game based on Skribbl",
   "main": "index.js",
   "scripts": {
-    "start": "node index"
+    "start": "node index",
+    "dev": "nodemon index"
   },
-  "author": "",
-  "license": "ISC",
+  "author": "/sanyam-2001",
+  "license": "MIT",
   "dependencies": {
     "express": "^4.17.1",
     "firebase-admin": "^9.8.0",
-    "socket.io": "^4.1.0"
+    "socket.io": "^4.1.1"
   },
   "devDependencies": {
     "nodemon": "^2.0.7"

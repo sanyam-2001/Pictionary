@@ -5,77 +5,82 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.13.0/css/all.min.css" rel="stylesheet">
-
     <link rel="stylesheet" href="./game.css">
-    <title>Pictionary</title>
+    <title>Game Room</title>
 </head>
 
-<body class="bg-dark">
-    <div class="w-75 mx-auto display-3 text-light">
-        Pictionary
-        <hr>
+<body>
+    <div class="header mx-auto text-light">
+        <span class="timer"><i class="fas fa-clock mr-3"></i><span id="time">120</span></span>
+        <span id="word">_ _ _ _ _ _ _ _ _ _</span>
+        <hr class="w-75 mx-auto bg-light">
     </div>
-    <div class="word-panel w-90 mx-auto bg-light flex p-2 my-3 rounded">
-        <div class="timer"><span id=gametime>120</span><i class="fas fa-clock mx-3"></i></div>
-        <div class="word" id="show-word">_ _ _ _</div>
-    </div>
-    <div class="main-panel w-90 mx-auto flex">
-        <div class="user-box bg-light mx-1 rounded p-2">
-            <div class="head display-4">Players</div>
-            <hr>
-            <div class="user-container">
+    <!-- Main Panel -->
+    <div class="main-panel mx-auto">
+
+        <div class="leaderboard mx-3">
+            <div class="head text-center bg-light my-3 rounded" style="font-size:18px">Leaderboard</div>
+            <div class="leaderboard-users rounded p-2 bg-light">
 
             </div>
         </div>
 
-        <canvas id="mainCanvas" class="bg-light rounded"></canvas>
+        <canvas id="canvas" class="bg-light rounded" style="border: 1px solid white;"></canvas>
 
-        <div class="chat-box bg-light mx-1 rounded p-1 flex" style="flex-direction: column;">
-            <div class="head  display-4">
-                Guesses
+        <div class="chat mx-3">
+            <div class="head text-center rounded bg-light my-3" style="font-size:18px">Chat</div>
+
+            <div class="chat-container rounded p-2 bg-light">
+
+            </div>
+
+            <div class="chat-input my-3">
+                <input type="text" class="form-control" placeholder="Start Guessing..." id="userGuess">
+            </div>
+
+        </div>
+    </div>
+
+    <div class="w-75 bg-light mx-auto my-3 rounded tools">
+        <div><input type="color" id="color-picker"></div>
+        <div><input type="range" id="width-picker" min="4" value=7 max="10"></div>
+        <div><i class="fas fa-trash" id="clear"></i></div>
+    </div>
+
+    <!-- Popups -->
+    <div class="startGamePrompt popup-wrapper">
+        <div class="popup bg-light p-3 rounded">
+            <div class="popup-text text-primary h3 text-center">Waiting for Players to join</div>
+            <div class="popup-actions text-center none" id="adminsOnly">
                 <hr>
-            </div>
-            <div class="guess-container p-2" style="flex: 1;">
-            </div>
-            <div class="input">
-                <input type="text" placeholder="Your Guess Here...." class="form-control" id="guessVal">
+                <div style="display: flex;justify-content: space-around;">
+                    <button class="btn btn-warning" id="copyRoom">Copy Room ID</button>
+                    <button class="btn btn-primary" id="adminstart">Start the Game</button>
+                </div>
             </div>
         </div>
     </div>
-    <div class="w-75 my-2 rounded p-2 bg-light mx-auto flex"
-        style="justify-content: space-around; align-items: center;">
-        <div class="color-picker"><input type="color" id="color"></div>
-        <div class="thickness-picker"><input type="range" min="1" max="10" value='5' class="form-control"
-                id="thickness"></div>
-        <div class="clear"><i class="fas fa-trash mx-3" style="font-size: 30px;cursor: pointer;"
-                title="Clear Screen "></i></div>
-    </div>
 
-    <div class="popups">
-        <div class="startGame bg-light p-3 rounded">
-            <div class="display-4">Waiting for Players to Join</div>
-            <hr>
-            <div class="text-center" id="adminOnly">
-                <button id="copyID" class="btn btn-info mx-3">Copy Room ID</button>
-                <button class="btn btn-primary" id="start">Start the Game</button>
-            </div>
-        </div>
-        <div class="info bg-primary text-light p-3 rounded">
-            <hr>
-            <div class="display-4 drawer">Sanyam11 is Drawing now</div>
-            <hr>
-        </div>
+    <div class="notification bg-dark text-light p-4 text-center rounded none">
+        <div class="h3" id="notification-body">Sanyam11 is Drawing</div>
+        <hr class="bg-light">
+        <footer style="font-size: 10px;" class="text-right">System notification</footer>
+    </div>
+    <div class="main-toast p-2 rounded none">
+        Code Copied!
     </div>
 
 
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
-    <script src="./canvas.js"></script>
     <script src="/socket.io/socket.io.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.6.1/gsap.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="./configVars.js"></script>
     <script src="./game.js"></script>
+    <script src="./canvas.js"></script>
 </body>
 
 </html>
