@@ -28,7 +28,6 @@ $('#clear').on('click', () => {
     socket.emit('clearScreen');
 })
 function draw(color, width, x, y) {
-    ctx.beginPath()
     ctx.lineCap = 'round'
     ctx.strokeStyle = color;
     ctx.lineWidth = width

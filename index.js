@@ -41,7 +41,7 @@ io.on('connection', (socket) => {
         });
         //Drawing Events
         socket.on('propagateDrawing', (e) => {
-            io.in(room).emit('propagateDrawing', e);
+            socket.to(room).emit('propagateDrawing', e);
         })
         socket.on('mouseup', () => socket.to(room).emit('mouseup'))
         socket.on('clearScreen', () => socket.to(room).emit('clearScreen'))
