@@ -13,7 +13,6 @@ canvas.addEventListener('mousemove', (e) => {
     if (isDrawing && isTurn) {
         const x = Math.floor(e.clientX - canvas.getBoundingClientRect().left), y = Math.floor(e.clientY - canvas.getBoundingClientRect().top)
         socket.emit('propagateDrawing', { color, width, x, y })
-        ctx.beginPath()
         draw(color, width, x, y)
 
     }
