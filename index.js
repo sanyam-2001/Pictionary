@@ -34,8 +34,11 @@ io.on('connection', (socket) => {
         //Handle Join Room
         handleJoin(db, socket, io, data);
         //Admin Starts For the first Time
-        socket.on('adminStart', () => {
+        socket.on('adminStart', async () => {
             io.in(room).emit('adminStart')
+            await db.collection('room').doc(room).update({
+                hasStarted: true
+            })
             //StartRound
             startRound(db, io, room);
         });

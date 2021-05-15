@@ -62,6 +62,7 @@ socket.on('userLeft', ({ userList, leavingUsername }) => {
 $('#adminstart').on('click', () => {
     socket.emit('adminStart')
 })
+socket.on('roomHasStarted', () => { $('.startGamePrompt').fadeOut() })
 socket.on('adminStart', () => {
     $('.startGamePrompt').fadeOut();
     setInterval(() => {
@@ -88,6 +89,8 @@ socket.on('toDrawer', ({ word, userTurn }) => {
     secretWord = word;
     $('#word').text(word);
     notification(`You are Drawing:  "${word}"`)
+    $('.chat-input').fadeOut()
+
 
 })
 socket.on('toGuesser', ({ word, userTurn }) => {
@@ -101,6 +104,7 @@ socket.on('toGuesser', ({ word, userTurn }) => {
     }
     $('#word').text(hiddenWord);
     notification(`${userTurn.username} is Drawing!`)
+    $('.chat-input').fadeIn()
 
 });
 

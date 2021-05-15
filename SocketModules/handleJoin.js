@@ -5,7 +5,8 @@ const handleJoin = async (db, socket, io, data) => {
     if (isAdmin) {
         await db.collection('room').doc(room).set({
             adminID: socket.id,
-            roomID: room
+            roomID: room,
+            hasStarted: false
         })
     }
     //Everybody joins Room
@@ -20,6 +21,11 @@ const handleJoin = async (db, socket, io, data) => {
     const users = await getUsersInRoom(db, room);
     await socket.join(room)
     io.in(room).emit('userJoined', { userList: users, joinedUsername: username });
+    const thisRoom = await db.collection('room').doc(room).get();
+    if (thisRoom.data().hasStarted) {
+        io.to(socket.id).emit('roomHasStarted');
+
+    }
 
 }
 
